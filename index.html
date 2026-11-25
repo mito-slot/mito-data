@@ -669,8 +669,9 @@ document.addEventListener("click",async e=>{
 });
 document.addEventListener("submit",async e=>{
   if(e.target.id!=="ghForm")return;e.preventDefault();
-  const rp=document.getElementById("ghRepo").value.trim().replace(/^https?:\/\/github\.com\//,"").replace(/\/+$/,"");const token=document.getElementById("ghToken").value.trim();
+  const rp=document.getElementById("ghRepo").value.trim().replace(/^https?:\/\/github\.com\//,"").replace(/\/+$/,"");const rawTok=document.getElementById("ghToken").value.normalize("NFKC");const tm=rawTok.match(/(github_pat_|ghp_)[A-Za-z0-9_]+/);const token=tm?tm[0]:rawTok.replace(/[^\x21-\x7e]/g,"");
   const m=rp.match(/^([\w.-]+)\/([\w.-]+)$/);if(!m||!token){dataMsg="リポジトリとトークンを入れてください";render();return}
+  if(!/^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(token)){dataMsg="貼り付けた中にトークン（github_pat_ で始まる文字）が見つかりませんでした。"+(rawTok.trim()?"いま貼られていたのは「"+rawTok.trim().slice(0,12)+"…」で始まる文字です。":"")+"GitHubの画面でトークンをコピーし直してから貼り付けてください";render();return}
   busy=true;dataMsg="確認しています…";render();
   try{const cfg={owner:m[1],repo:m[2],token};await ghLogin(cfg);try{localStorage.setItem("mitoGH",JSON.stringify(cfg))}catch(_){}
     busy=false;dataMsg="";hist.length=0;state={view:"home",params:{}};render();flash("管理者としてログインしました")}
