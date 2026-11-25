@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>水戸赤塚 データ帳</title><meta name="description" content="マルハンメガシティ水戸赤塚のスロット台データ（差枚ランキング・島図・機種別・結果まとめ）"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap"><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>メガシティ水戸赤塚　データ帳</title><meta name="description" content="マルハンメガシティ水戸赤塚のスロット台データ（差枚ランキング・島図・機種別・結果まとめ）"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap"><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}
 /* Layout: 夜の藍色ヘッダー + 白いデータカード、下端に固定の戻るバー。スマホ縦持ち優先の1カラム */
 :root{
   --bg:#eef0f5; --surface:#ffffff; --surface-2:#f5f6fa; --ink:#191c2b; --muted:#5f6478; --line:#d9dce6;
@@ -195,7 +195,7 @@ table.mini td,table.mini th{padding:6px 8px;font-size:13px}
       <span class="brand-mark" aria-hidden="true">
         <svg width="22" height="22" viewBox="0 0 22 22"><rect x="2" y="3" width="5" height="16" rx="1.5" fill="var(--accent)"/><rect x="8.5" y="3" width="5" height="16" rx="1.5" fill="var(--head-ink)"/><rect x="15" y="3" width="5" height="16" rx="1.5" fill="var(--accent)"/><rect x="1" y="10" width="20" height="2" fill="var(--head-2)"/></svg>
       </span>
-      <span><span class="brand-name" id="storeName">水戸赤塚 データ帳</span><br><span class="brand-sub" id="storeSub"></span></span>
+      <span><span class="brand-name" id="storeName">メガシティ水戸赤塚　データ帳</span><br><span class="brand-sub" id="storeSub"></span></span>
     </button>
     </div>
   </div>
@@ -215,13 +215,16 @@ table.mini td,table.mini th{padding:6px 8px;font-size:13px}
    DATA = {v, names:[機種名], days:{YYYY-MM-DD:{rows:[[台番,機種番号,G,アウト,差枚,BB,RB,島]],src,at,rev}}, posts:{YYYY-MM-DD:{ev,text,at}}}
    差枚は常にお客様側の値（セーフ−アウト）で保存する。
    ============================================================ */
-const STORE={name:"マルハンメガシティ水戸赤塚",short:"水戸赤塚",addr:"茨城県水戸市赤塚2丁目2029-164",hours:"9:00〜22:50",units:"1,002台（パチンコ468台・スロット534台）",slot:"20円スロット514台・5円スロット20台",url:"https://www.maruhan.co.jp/hall/2902/index.html"};
+const STORE={name:"マルハンメガシティ水戸赤塚",short:"メガシティ水戸赤塚",addr:"茨城県水戸市赤塚2丁目2029-164",hours:"9:00〜22:50",units:"1,002台（パチンコ468台・スロット534台）",slot:"20円スロット514台・5円スロット20台",url:"https://www.maruhan.co.jp/hall/2902/index.html"};
 const WD="日月火水木金土";
 const nk=s=>String(s??"").normalize("NFKC").replace(/\s+/g," ").trim();
 const md=d=>String(d.getMonth()+1).padStart(2,"0")+"/"+String(d.getDate()).padStart(2,"0");
 const toDate=k=>{const[y,m,d]=k.split("-").map(Number);return new Date(y,m-1,d)};
 const fmt=n=>(Math.round(n)||0).toLocaleString("ja-JP");
-const sdiff=n=>(n>0?"+":n<0?"−":"±")+fmt(Math.abs(n));
+// マイナスの差枚は数字を出さず「---」にする
+const sdiffReal=n=>(n>0?"+":n<0?"−":"±")+fmt(Math.abs(n));
+const sdiffPub=n=>Math.round(n)<0?"---":sdiffReal(n);   // 一般公開・投稿用
+const sdiff=n=>canWrite?sdiffReal(n):sdiffPub(n);       // 管理者には本当の数字
 const cls=n=>n>0?"plus":n<0?"minus":"muted";
 const odds=(g,n)=>n?"1/"+Math.round(g/n):"-";
 const rate=(out,diff)=>out?((out+diff)/out*100).toFixed(1)+"%":"-";
@@ -269,7 +272,8 @@ const islLabel=u=>u.isl?`<span class="isl-tag">島${u.isl}</span>`:"";
 /* ---------- 画面遷移 ---------- */
 let state={view:"home",params:{}};const hist=[];
 let chartSel=null,hlUnit=null;
-function go(view,params={}){hlUnit=null;hist.push({...state});state={view,params};render();window.scrollTo(0,0)}
+const clearHash=()=>{if(location.hash)try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}};
+function go(view,params={}){if(view!=="admin")clearHash();hlUnit=null;hist.push({...state});state={view,params};render();window.scrollTo(0,0)}
 function back(){state=hist.pop()||{view:"home",params:{}};render();window.scrollTo(0,0)}
 const app=document.getElementById("app");
 const TITLES={admin:"管理者ログイン",home:"マルハンメガシティ水戸赤塚",rank:"台別ランキング",mrank:"機種別ランキング",map:"島図",model:"機種別データ",unit:"台データ",trend:"曜日・日付の傾向",post:"結果まとめ",data:"データの追加・管理"};
@@ -278,7 +282,7 @@ function render(){
   document.getElementById("storeSub").textContent=TITLES[state.view]||"";
   document.getElementById("backbar").hidden=state.view==="home";
   const needsData=!["data","home","admin"].includes(state.view);
-  app.innerHTML=banner()+(needsData&&!NDAYS?VIEWS.home():VIEWS[state.view]())+`<p class="foot">店舗公式のサイトではありません。数値はホールのデータを元にした集計です。<br><button type="button" class="linkbtn" data-go="admin">${canWrite?"管理者（ログイン中）":"管理者"}</button></p>`;chartSel=null;
+  app.innerHTML=banner()+(needsData&&!NDAYS?VIEWS.home():VIEWS[state.view]())+`<p class="foot">店舗公式のサイトではありません。数値はホールのデータを元にした集計です。${canWrite?`<br><button type="button" class="linkbtn" data-go="admin">管理者（ログイン中）</button>`:""}</p>`;chartSel=null;
   if(NDAYS&&(state.view==="unit"||state.view==="model"))bindChart();
 }
 function banner(){
@@ -328,12 +332,7 @@ admin(){
     <label class="fl" for="ghRepo">リポジトリ（ユーザー名/リポジトリ名）<input id="ghRepo" required value="${esc(g)}" placeholder="例：nicole/mito" autocomplete="off"></label>
     <label class="fl" for="ghToken">GitHubのトークン<input id="ghToken" type="password" required autocomplete="off" placeholder="github_pat_…"></label>
     <button type="submit" class="btnp"${busy?" disabled":""}>ログイン</button><div class="note" id="ghMsg" role="status">${esc(dataMsg)}</div></form>
-  <div class="card guide"><div class="sec-title">トークンの作り方（最初の1回だけ）</div><ol>
-    <li>GitHubの「Settings」→「Developer settings」→「Personal access tokens」→「Fine-grained tokens」→「Generate new token」</li>
-    <li>「Repository access」で「Only select repositories」を選び、このサイトのリポジトリだけを選ぶ</li>
-    <li>「Permissions」の「Contents」を「Read and write」にして作成</li>
-    <li>表示された github_pat_… をここに貼ってログイン</li></ol>
-    <p class="note">トークンはこの端末のブラウザにだけ保存され、ほかの人には見えません。共用のパソコンでは使い終わったらログアウトしてください。</p></div>`},
+`},
 
 rank(){const p=P(prefs.period);const f=SORTS[prefs.sort].f;
   const list=UNITS.map(u=>unitAgg(u,p)).filter(a=>a.n).sort((a,b)=>prefs.desc?f(b)-f(a):f(a)-f(b)).slice(0,30);
@@ -405,13 +404,13 @@ post(){
     ${canWrite?`<label for="postEv">イベント</label><input id="postEv" class="span2 tin" value="${esc(ev)}" placeholder="例：8のつく日" maxlength="40">`:""}</div></div>
   <section class="rcard" aria-label="結果カード">
     <div class="rc-head"><span class="rc-date">${dl}</span><span class="rc-title">${STORE.short} 結果</span></div>${ev?`<div class="rc-ev">${esc(ev)}</div>`:""}
-    <div class="rc-big"><div><small>総差枚</small><b class="${cls(R.tot)}">${sdiff(R.tot)}<i>枚</i></b></div><div><small>平均差枚</small><b class="${cls(R.avg)}">${sdiff(R.avg)}<i>枚</i></b></div><div><small>勝率</small><b>${R.win}<i>/${R.n}台</i></b></div></div>
+    <div class="rc-big"><div><small>総差枚</small><b class="${cls(R.tot)}">${sdiffPub(R.tot)}<i>枚</i></b></div><div><small>平均差枚</small><b class="${cls(R.avg)}">${sdiffPub(R.avg)}<i>枚</i></b></div><div><small>勝率</small><b>${R.win}<i>/${R.n}台</i></b></div></div>
     <div class="rc-stats"><span>万枚 <b>${R.c10k}</b>台</span><span>+5,000枚↑ <b>${R.c5k}</b>台</span><span>+3,000枚↑ <b>${R.c3k}</b>台</span></div>
-    <h3>全台系候補</h3>${R.zen.length?`<table class="rc-t">${R.zen.map(z=>`<tr><td class="l">${esc(z.name)}</td><td class="num">${z.win}/${z.n}台+</td><td class="num ${cls(z.avg)}">平均${sdiff(z.avg)}</td></tr>`).join("")}</table>`:`<p class="rc-none">該当なし</p>`}
-    <h3>優秀機種（2台以上・平均+500枚以上）</h3>${R.good.length?`<table class="rc-t">${R.good.map(z=>`<tr><td class="l">${esc(z.name)}</td><td class="num">${z.win}/${z.n}台+</td><td class="num ${cls(z.avg)}">平均${sdiff(z.avg)}</td></tr>`).join("")}</table>`:`<p class="rc-none">該当なし</p>`}
-    <h3>末尾別（台番号の下1桁）</h3><div class="rc-tails">${R.tails.map((t,i)=>`<div class="${R.bestTail.includes(i)?"hit":""}"><span>${i}</span><b class="num ${cls(t.avg)}">${sdiff(t.avg)}</b><small class="num">${t.win}/${t.n}</small></div>`).join("")}</div>
-    <h3>並び（同じ島で+1,000枚以上が3台以上連続）</h3>${R.runs.length?`<table class="rc-t">${R.runs.map(r=>`<tr><td class="l num">${r.from}〜${r.to}番台</td><td class="num">${r.len}台並び</td><td class="num plus">平均${sdiff(r.avg)}</td></tr>`).join("")}</table>`:`<p class="rc-none">該当なし</p>`}<p class="rc-sub">2台並び（どちらも+1,000枚以上）：${R.pairs}組</p>
-    <h3>差枚 TOP10</h3><table class="rc-t">${R.top.map((u,i)=>`<tr><td class="num rk">${i+1}</td><td class="l">${esc(u.name)} <span class="muted num">${u.no}</span></td><td class="num">${fmt(u.d.G)}G</td><td class="num plus">${sdiff(u.d.diff)}</td></tr>`).join("")}</table>
+    <h3>全台系候補</h3>${R.zen.length?`<table class="rc-t">${R.zen.map(z=>`<tr><td class="l">${esc(z.name)}</td><td class="num">${z.win}/${z.n}台+</td><td class="num ${cls(z.avg)}">平均${sdiffPub(z.avg)}</td></tr>`).join("")}</table>`:`<p class="rc-none">該当なし</p>`}
+    <h3>優秀機種（2台以上・平均+500枚以上）</h3>${R.good.length?`<table class="rc-t">${R.good.map(z=>`<tr><td class="l">${esc(z.name)}</td><td class="num">${z.win}/${z.n}台+</td><td class="num ${cls(z.avg)}">平均${sdiffPub(z.avg)}</td></tr>`).join("")}</table>`:`<p class="rc-none">該当なし</p>`}
+    <h3>末尾別（台番号の下1桁）</h3><div class="rc-tails">${R.tails.map((t,i)=>`<div class="${R.bestTail.includes(i)?"hit":""}"><span>${i}</span><b class="num ${cls(t.avg)}">${sdiffPub(t.avg)}</b><small class="num">${t.win}/${t.n}</small></div>`).join("")}</div>
+    <h3>並び（同じ島で+1,000枚以上が3台以上連続）</h3>${R.runs.length?`<table class="rc-t">${R.runs.map(r=>`<tr><td class="l num">${r.from}〜${r.to}番台</td><td class="num">${r.len}台並び</td><td class="num plus">平均${sdiffPub(r.avg)}</td></tr>`).join("")}</table>`:`<p class="rc-none">該当なし</p>`}<p class="rc-sub">2台並び（どちらも+1,000枚以上）：${R.pairs}組</p>
+    <h3>差枚 TOP10</h3><table class="rc-t">${R.top.map((u,i)=>`<tr><td class="num rk">${i+1}</td><td class="l">${esc(u.name)} <span class="muted num">${u.no}</span></td><td class="num">${fmt(u.d.G)}G</td><td class="num plus">${sdiffPub(u.d.diff)}</td></tr>`).join("")}</table>
   </section>
   <div class="card" style="padding:16px;display:grid;gap:10px"><div class="sec-title">投稿文</div>
     <textarea id="postText" rows="18"${canWrite?"":" readonly"}>${esc(txt)}</textarea>
@@ -468,7 +467,7 @@ function drawChart(series,from,to,hl){
   const step=[1000,2000,2500,5000,10000,20000].find(s=>(mx-mn)/s<=6)||20000;
   const top=Math.ceil(mx/step)*step,bot=Math.floor(mn/step)*step;
   const x=i=>L+(W-L-R)*i/(n-1),y=v=>T+(H-T-B)*(top-v)/(top-bot);const mono='font-family="IBM Plex Mono,monospace"';
-  let g="";for(let v=bot;v<=top;v+=step)g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" style="stroke:${v===0?"var(--muted)":"var(--line)"}" stroke-width="${v===0?2:1}"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="13" fill="var(--muted)" ${mono}>${fmt(v)}</text>`;
+  let g="";for(let v=bot;v<=top;v+=step)g+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" style="stroke:${v===0?"var(--muted)":"var(--line)"}" stroke-width="${v===0?2:1}"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="13" fill="var(--muted)" ${mono}>${v<0&&!canWrite?"":fmt(v)}</text>`;
   const ticks=n>12?[0,Math.round((n-1)/3),Math.round((n-1)*2/3),n-1]:[...Array(n).keys()].filter(i=>i%3===0||i===n-1);
   const xl=[...new Set(ticks)].map(i=>`<text x="${x(i)}" y="${H-10}" text-anchor="${i===0?"start":i===n-1?"end":"middle"}" font-size="12" fill="var(--muted)" ${mono}>${md(dates[i])}</text>`).join("");
   const multi=series.length>1;
@@ -510,13 +509,13 @@ function resultSummary(di){
     zen,good,tails,bestTail,runs:runs.slice(0,6),pairs,top:[...us].sort((a,b)=>b.d.diff-a.d.diff).slice(0,10)};
 }
 function postText(R,dl,ev){
-  const L=[`${dl}📝結果📝`,STORE.name];if(ev)L.push(`🔥『${ev}』`);L.push("",`📈全体結果📈`,`💫総差枚⏩${sdiff(R.tot)}枚💫`,`💫平均差枚⏩${sdiff(R.avg)}枚💫`,"");
+  const L=[`${dl}📝結果📝`,STORE.name];if(ev)L.push(`🔥『${ev}』`);L.push("",`📈全体結果📈`,`💫総差枚⏩${sdiffPub(R.tot)}枚💫`,`💫平均差枚⏩${sdiffPub(R.avg)}枚💫`,"");
   if(R.c10k)L.push(`🌋万枚オーバーが${R.c10k}台！`);if(R.c5k)L.push(`💥+5,000枚オーバーが${R.c5k}台！`);if(R.c3k)L.push(`💥+3,000枚オーバーが${R.c3k}台！`);
   L.push("","👑優秀機種候補👑");
-  if(R.zen.length){L.push("＜全台系候補＞");R.zen.forEach(z=>L.push(`🎖️${z.name}(${z.win}/${z.n}台+)➡平均${sdiff(z.avg)}枚`))}
-  if(R.good.length){L.push("＜優秀機種＞");R.good.slice(0,5).forEach(z=>L.push(`✅${z.name}(${z.win}/${z.n}台+)➡平均${sdiff(z.avg)}枚`))}
-  if(R.bestTail.length){L.push("","🔢末尾考察🔢");R.bestTail.forEach(i=>{const t=R.tails[i];L.push(`📍末尾${i}➡平均${sdiff(t.avg)}枚(${t.win}/${t.n}台+)`)})}
-  if(R.runs.length){L.push("","🔗並び🔗");R.runs.slice(0,3).forEach(r=>L.push(`📍${r.from}〜${r.to}番台の${r.len}台並び➡平均${sdiff(r.avg)}枚`))}
+  if(R.zen.length){L.push("＜全台系候補＞");R.zen.forEach(z=>L.push(`🎖️${z.name}(${z.win}/${z.n}台+)➡平均${sdiffPub(z.avg)}枚`))}
+  if(R.good.length){L.push("＜優秀機種＞");R.good.slice(0,5).forEach(z=>L.push(`✅${z.name}(${z.win}/${z.n}台+)➡平均${sdiffPub(z.avg)}枚`))}
+  if(R.bestTail.length){L.push("","🔢末尾考察🔢");R.bestTail.forEach(i=>{const t=R.tails[i];L.push(`📍末尾${i}➡平均${sdiffPub(t.avg)}枚(${t.win}/${t.n}台+)`)})}
+  if(R.runs.length){L.push("","🔗並び🔗");R.runs.slice(0,3).forEach(r=>L.push(`📍${r.from}〜${r.to}番台の${r.len}台並び➡平均${sdiffPub(r.avg)}枚`))}
   return L.join("\n");
 }
 
@@ -644,7 +643,7 @@ async function publishState(msg,snap){
 /* ---------- イベント ---------- */
 document.addEventListener("click",async e=>{
   const t=e.target.closest("[data-go],[data-model],[data-unit],[data-post],[data-hl],[data-torder],[data-del],[data-arm],#copyPost,#resetPost,#pubPost,#unpubPost,#btnOrder,#brand,#backBtn,#savePending,#clearPending,#ghLogout");if(!t)return;
-  if(t.id==="ghLogout"){try{localStorage.removeItem("mitoGH")}catch(e){}GH=null;canWrite=false;hist.length=0;state={view:"home",params:{}};render();flash("ログアウトしました");return}
+  if(t.id==="ghLogout"){try{localStorage.removeItem("mitoGH")}catch(e){}GH=null;canWrite=false;clearHash();hist.length=0;state={view:"home",params:{}};render();flash("ログアウトしました");return}
   if(t.dataset.hl){const n=+t.dataset.hl;hlUnit=hlUnit===n?null:n;bindChart();return}
   if(t.dataset.arm){delArm=t.dataset.arm;const y=window.scrollY;render();window.scrollTo(0,y);return}
   if(busy&&(t.dataset.del||["pubPost","unpubPost","savePending"].includes(t.id)))return;
@@ -661,7 +660,7 @@ document.addEventListener("click",async e=>{
     return}
   const keep=()=>{const y=window.scrollY;render();window.scrollTo(0,y)};
   if(t.dataset.torder){const k=t.dataset.torder;prefs[k]={...prefs[k],desc:!prefs[k].desc};savePrefs();keep();return}
-  if(t.id==="brand"){hist.length=0;state={view:"home",params:{}};render();window.scrollTo(0,0);return}
+  if(t.id==="brand"){clearHash();hist.length=0;state={view:"home",params:{}};render();window.scrollTo(0,0);return}
   if(t.id==="backBtn"){back();return}
   if(t.id==="btnOrder"){prefs.desc=!prefs.desc;savePrefs();render();return}
   if(t.dataset.post){go("post",{date:t.dataset.post});return}
@@ -674,7 +673,7 @@ document.addEventListener("submit",async e=>{
   if(!/^(github_pat_|ghp_)[A-Za-z0-9_]+$/.test(token)){dataMsg="貼り付けた中にトークン（github_pat_ で始まる文字）が見つかりませんでした。"+(rawTok.trim()?"いま貼られていたのは「"+rawTok.trim().slice(0,12)+"…」で始まる文字です。":"")+"GitHubの画面でトークンをコピーし直してから貼り付けてください";render();return}
   busy=true;dataMsg="確認しています…";render();
   try{const cfg={owner:m[1],repo:m[2],token};await ghLogin(cfg);try{localStorage.setItem("mitoGH",JSON.stringify(cfg))}catch(_){}
-    busy=false;dataMsg="";hist.length=0;state={view:"home",params:{}};render();flash("管理者としてログインしました")}
+    busy=false;dataMsg="";clearHash();hist.length=0;state={view:"home",params:{}};render();flash("管理者としてログインしました")}
   catch(err){busy=false;dataMsg=err.message||"ログインできませんでした";render()}
 });
 document.addEventListener("input",e=>{if(e.target.id==="postText"&&canWrite)state.params={...state.params,txt:e.target.value}});
@@ -703,7 +702,10 @@ document.addEventListener("drop",e=>{if(!hasFiles(e))return;e.preventDefault();d
 let flashT=null;function flash(msg){const el=document.getElementById("toast");if(!el||!msg)return;el.textContent=msg;el.hidden=false;clearTimeout(flashT);flashT=setTimeout(()=>el.hidden=true,6000)}
 
 /* ---------- 起動 ---------- */
-render();
+// 管理者ログインは URL の最後に #admin を付けたときだけ開く（一般の画面にはボタンを出さない）
+const openAdminFromHash=()=>{if(location.hash==="#admin"&&state.view!=="admin"){hist.length=0;state={view:"admin",params:{}};render();window.scrollTo(0,0)}};
+window.addEventListener("hashchange",openAdminFromHash);
+render();openAdminFromHash();
 (async()=>{
   let cfg=null;try{cfg=JSON.parse(localStorage.getItem("mitoGH")||"null")}catch(e){}
   if(cfg&&cfg.token){try{await ghLogin(cfg);render();return}catch(e){flash("管理者ログインが切れています："+(e.message||""))}}
